@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=development
+      - NUXT_PUBLIC_API_URL=http://localhost:3000
+      - NUXT_AUTH_BASE_URL=http://localhost:3000/
+      - AUTH_ORIGIN=http://localhost:4000
+      - NITRO_HOST=0.0.0.0
+      - NITRO_PORT=4000
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=development
+      - APP_URL=http://localhost:4000
+      - APP_PORT=3000
+      - JWT_SECRET=THisIsMySecretKey!
+      - DEFAULT_TIMEZONE=America/Argentina/Buenos_Aires
+      - DATABASE_NAME=movilizatorio
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=root
+      - DATABASE_HOST=database
+      - DATABASE_PORT=3306
+      - MAILER_FROM="My Org APP <no-reply@mail.com>"
+      - MAILER_HOST=
+      - MAILER_PORT=
+      - MAILER_USER=
+      - MAILER_PASSWORD=
+
+  database:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: movilizatorio
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
